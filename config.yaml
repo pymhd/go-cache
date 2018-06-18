@@ -1,0 +1,16 @@
+MaxItems: 10000000 # max number of item in cache default 1 million
+DefaultTTL: 6w #10s, 3m, 6h, 7d, 2w, 3M, 1y 	 default 3 month
+SyncTime: 2h # same values			 default 1 hour
+SyncFile: /tmp/data.bin    # file to sync cache
+LogFile: /var/log/go-cache.log  # use /dev/null ti disable 
+HTTP:
+    Ip:  0.0.0.0 #listen ip 0.0.0.0 to listen all ifaces
+    Port: 9000
+    SSL: false
+    Crt: ""
+    Key: ""
+    Allow:
+        - 127.0.0.1
+        - 10.20.5.6
+        - 10.255.128.0/24
+    Deny:
