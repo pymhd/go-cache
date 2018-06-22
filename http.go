@@ -2,22 +2,28 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"net/http"
 	"encoding/json"
 	"github.com/gorilla/mux"
 )
 
-func runHTTPServer() {
+
+
+func runHTTPServer(host string, port int, ssl bool, crt, key string) {
 	rolton := mux.NewRouter()
 	
-	rolton.HandleFunc("/map/{key}", DictOpHandler).Methods("GET", "DELETE", "POST")
+	rolton.HandleFunc("/map/{key}", MwManager(DictOpHandler, CheckAccess(config.HTTP.AllowNets))).Methods("GET", "DELETE", "POST")
 	rolton.HandleFunc("/list/{key}", ListOpHandler).Methods("PUT", "DELETE", "GET")
 	rolton.HandleFunc("/stats", ShowStatsHandler).Methods("GET")
 	
 	//rolton.HandleFunc("/", MwManager(novaHandler, Logging())).Methods("GET", "POST")
 	//rolton.HandleFunc("/nova", MwManager(novaHandler, Logging())).Methods("GET", "POST")
-	log.Fatal(http.ListenAndServe(":9000", rolton))
-
+	if !ssl {
+		log.Fatal(http.ListenAndServe(host + ":" + strconv.Itoa(port), rolton))
+	} else {
+		log.Fatal(http.ListenAndServeTLS(host + ":" + strconv.Itoa(port), crt, key, rolton))
+	}
 }
 
 func DictOpHandler(w http.ResponseWriter, r *http.Request) {
@@ -60,3 +66,4 @@ func ListOpHandler(w http.ResponseWriter, r *http.Request) {
 
 func ShowStatsHandler(w http.ResponseWriter, r *http.Request) {
 }
+

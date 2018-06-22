@@ -17,6 +17,11 @@ type Middleware func(http.HandlerFunc) http.HandlerFunc
 func CheckAccess(nets []*net.IPNet) Middleware {
     return func(f http.HandlerFunc) http.HandlerFunc {
         return func(w http.ResponseWriter, r *http.Request) {
+            if len(nets) == 0 {
+                //empty config "allow" section - allow all
+                f(w, r)
+                return
+            }
             from := strings.Split(r.RemoteAddr, ":")[0]
             fromIP := net.ParseIP(from)
             if fromIP == nil {

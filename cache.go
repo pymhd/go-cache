@@ -78,7 +78,7 @@ func (c *Cache) CleanUp() {
 	c.Lock()
 	defer c.Unlock()
 	
-	start := time.Now()
+	//start := time.Now()
 	
 	expired, err  := c.GetExpiredKeys()
 	if err != nil {
@@ -98,7 +98,7 @@ func NewCache(filename string, maxElem, syncTime int) *Cache {
 	cache := Cache{}
 	cache.Backend = backend
 	flushTicker := time.NewTicker(time.Duration(syncTime) * time.Second)
-	cleanTicker := time.NewTicker(5 * time.Second)
+	cleanTicker := time.NewTicker(1 * time.Minute)
 	go func() {
 		for _ = range flushTicker.C {
 			cache.Save()  //

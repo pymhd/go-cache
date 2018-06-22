@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"encoding/gob"
 	"errors"
 	"os"
@@ -40,7 +41,7 @@ type OrderedDict struct {
 func (o *OrderedDict) Put(k string, v interface{}, ttl int) error {
 	log.Debugf("Backend PUT op: key -> (%s). Value type: %T, ttl = %d\n", k, v, ttl)
 	if ttl == 0 {
-		ttl = 315360000 // 10 years in seconds
+		ttl =  config.DefaultTTLSec
 	}
 	//V := Value{Data: v, Born: time.Now(), TTL: time.Duration(ttl) * time.Second}
 	// set up expiration time
@@ -67,6 +68,7 @@ func (o *OrderedDict) Put(k string, v interface{}, ttl int) error {
 		log.Debugf("%s\n", keyToDelete)
 		o.order = o.order[1:]
 		delete(o.UnderlayDict, keyToDelete)
+		delete(o.Curator, keyToDelete)
 		log.Debug("Order rearranged, extra item deleted")
 	}
 	return nil
@@ -91,6 +93,7 @@ func (o *OrderedDict) Del(k ...string) {
 	log.Debugf("Backend DEL op: key -> (%s)\n", k)
 	for _, key := range k {
 		delete(o.UnderlayDict, key)
+		delete(o.Curator, key)
 	}
 }
 
@@ -125,7 +128,23 @@ func getIndex(v interface{}, s []interface{}) int {
 }
 
 func (o *OrderedDict) Flush() {
-	writeGob(o.Filename, o.UnderlayDict)
+        var no OrderedDict
+	c := make(Curator, len(o.Curator))
+        d := make(UnderlayDict, len(o.UnderlayDict))
+        s := make(UnderlayList, len(o.UnderlayList))
+        order := make([]string, len(o.order))
+        no = OrderedDict{c, d, s, o.Maxelem, o.Filename, order, make(chan bool), sync.WaitGroup{}}
+        for k, v := range o.Curator {
+        	no.Curator[k] = v
+        }
+        for k, _ := range o.UnderlayList {
+        	copy(no.UnderlayList[k], o.UnderlayList[k])
+        }
+        for k, _ := range o.UnderlayDict {
+            no.UnderlayDict[k] = o.UnderlayDict[k]
+        }
+        copy(no.order, o.order) //fine
+	go writeGob(no.Filename, no)
 	//if err != nil {
 	//	//fmt.Printf("Cannot sync cache to disk")
 	//}
@@ -194,15 +213,25 @@ func (o *OrderedDict) GetExpiredKeys() ([]string, error) {
 
 
 func NewBackend(maxelem int, filename string) *OrderedDict {
+	var ret *OrderedDict
+	if err := readGob(filename, &ret); err == nil {
+		fmt.Println("Successfully init form file")
+		ret.Maxelem = maxelem //change in case of value changed
+		return ret
+	}
 	c := make(Curator, 0)
 	d := make(UnderlayDict, 0)
 	s := make(UnderlayList, 0)
 	//wg := sync.WaitGroup{}
-	ret := &OrderedDict{c, d, s, maxelem, filename, make([]string, 0), make(chan bool), sync.WaitGroup{}}
+	ret = &OrderedDict{c, d, s, maxelem, filename, make([]string, 0), make(chan bool), sync.WaitGroup{}}
 	return ret
 }
 
 func writeGob(filePath string, object interface{}) error {
+	st := time.Now()
+	defer func() {
+		log.Info("Disk sync took: : ", time.Since(st))
+	}()
 	file, err := os.Create(filePath)
 	if err == nil {
 		encoder := gob.NewEncoder(file)
@@ -212,7 +241,7 @@ func writeGob(filePath string, object interface{}) error {
 	return err
 }
 
-/*
+
 func readGob(filePath string, object interface{}) error {
        file, err := os.Open(filePath)
        if err == nil {
@@ -223,4 +252,4 @@ func readGob(filePath string, object interface{}) error {
        return err
 }
 
-*/
+
