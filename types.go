@@ -11,8 +11,14 @@ type Response struct {
 	Reason string      `json:"reason,omitempty"`
 }
 
-/*
+type HealthResponse struct {
+	Items    int `json:"items"`
+	FileSize int64 `json:"size_kb"`
+	Max      int `json:"max"`
+}
 
+
+/*
 type Conductor chan interface{}
 
 

@@ -18,6 +18,8 @@ type Backend interface {
 	GetExpiredKeys() ([]string, error)
 	//Flush in memory obj to disk
 	Flush()
+	Len() int
+	Size() int64
 	// interrupt expired keys search
 	//Break()
 }
@@ -90,6 +92,16 @@ func (c *Cache) CleanUp() {
 		c.Remove(expired...) //this will lock
 	}
 	//log.Info("cleanup func took: ", time.Since(start))
+}
+
+func (c *Cache) Stats() *HealthResponse {
+	c.Lock() 
+	defer c.Unlock() 
+	ret := HealthResponse{}
+	ret.Max =  100
+	ret.Items = c.Len()
+	ret.FileSize = c.Size()
+	return &ret
 }
 
 

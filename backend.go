@@ -151,6 +151,18 @@ func (o *OrderedDict) Flush() {
 	//fmt.Printf("Synced cache to disk")
 }
 
+func (o *OrderedDict) Len() int {
+	return len(o.UnderlayDict)
+}
+
+func (o *OrderedDict) Size() int64 {
+        fi, err := os.Stat(o.Filename)
+        if err != nil {
+            return 0
+        }
+        return fi.Size() / 1024
+}
+
 /*
 func (o *OrderedDict) Break() {
 	log.Debug("Checking procedure to break up")
