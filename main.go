@@ -4,7 +4,7 @@ package main
 import (
         "os"
         "flag"
-        "logging"
+        logging "github.com/pymhd/go-logging"
 )
 
 var (
