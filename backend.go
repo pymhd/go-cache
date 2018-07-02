@@ -128,6 +128,10 @@ func getIndex(v interface{}, s []interface{}) int {
 }
 
 func (o *OrderedDict) Flush() {
+        st := time.Now()
+        defer func() {
+                log.Info("Object deep copy took: ", time.Since(st))
+        }()
         var no OrderedDict
 	c := make(Curator, len(o.Curator))
         d := make(UnderlayDict, len(o.UnderlayDict))
@@ -145,10 +149,6 @@ func (o *OrderedDict) Flush() {
         }
         copy(no.order, o.order) //fine
 	go writeGob(no.Filename, no)
-	//if err != nil {
-	//	//fmt.Printf("Cannot sync cache to disk")
-	//}
-	//fmt.Printf("Synced cache to disk")
 }
 
 func (o *OrderedDict) Len() int {

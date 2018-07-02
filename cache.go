@@ -89,7 +89,7 @@ func (c *Cache) CleanUp() {
 		return 
 	}
 	if len(expired) > 0 {
-		c.Remove(expired...) //this will lock
+		c.Del(expired...) 
 	}
 	//log.Info("cleanup func took: ", time.Since(start))
 }
