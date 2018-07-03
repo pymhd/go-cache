@@ -151,8 +151,17 @@ func (o *OrderedDict) Flush() {
 	go writeGob(no.Filename, no)
 }
 
+func (o *OrderedDict) BlockingFlush() {
+        writeGob(o.Filename, o)   
+}
+
 func (o *OrderedDict) Len() int {
-	return len(o.UnderlayDict)
+	dictElements  := len(o.UnderlayDict)
+	var listElements int
+	for _, l := range o.UnderlayList {
+	    listElements += len(l)
+	}
+	return dictElements + listElements
 }
 
 func (o *OrderedDict) Size() int64 {

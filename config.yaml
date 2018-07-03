@@ -5,7 +5,7 @@ SyncFile: /var/lib/go-cache/data.bin    # file to sync cache
 LogFile: /var/log/cache/go-cache.log  # use /dev/null to disable 
 HTTP:
     Ip:  0.0.0.0 #listen ip 0.0.0.0 to listen all ifaces
-    Port: 9000
+    Port: 9001
     SSL: false
     Crt: ""
     Key: ""

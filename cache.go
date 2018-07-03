@@ -3,6 +3,9 @@ package main
 import (
 	"sync"
 	"time"
+        "os"
+        "os/signal"
+        "syscall"
 )
 
 type Backend interface {
@@ -18,6 +21,7 @@ type Backend interface {
 	GetExpiredKeys() ([]string, error)
 	//Flush in memory obj to disk
 	Flush()
+	BlockingFlush()
 	Len() int
 	Size() int64
 	// interrupt expired keys search
@@ -27,6 +31,7 @@ type Backend interface {
 type Cache struct {
 	Backend
 	sync.Mutex
+        
 }
 
 func (c *Cache) Insert(k string, v interface{}, ttl int) error {
@@ -76,6 +81,12 @@ func (c *Cache) Save() {
 	c.Flush()
 }
 
+func (c *Cache) BlockingSave() {
+    c.Lock()
+    defer c.Unlock()
+    c.BlockingFlush()
+}
+
 func (c *Cache) CleanUp() {
 	c.Lock()
 	defer c.Unlock()
@@ -121,6 +132,14 @@ func NewCache(filename string, maxElem, syncTime int) *Cache {
 			cache.CleanUp()
 		}
 	}()
+        go func() {
+                sigs := make(chan os.Signal, 1)
+                signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+                sig := <- sigs
+                log.Infof("Signal: '%s' caught, saving cache to disk and exit with status 0\n", sig)
+                cache.BlockingSave()
+                os.Exit(0)
+        }()
 	return &cache
 }
 
