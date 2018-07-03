@@ -23,7 +23,6 @@ func runHTTPServer(host string, port int, ssl bool, crt, key string) {
 
 func DictOpHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	//action := vars["action"]
 	k := vars["key"]
 	resp := Response{}
 	req := Request{}
@@ -50,7 +49,7 @@ func DictOpHandler(w http.ResponseWriter, r *http.Request) {
 		enc.Encode(resp) //write data and exit
 	case http.MethodDelete:
 		cache.Remove(k)
-		enc.Encode(resp) 
+		enc.Encode(resp)
 	}
 }
 
@@ -63,10 +62,10 @@ func ListOpHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		        resp.Error = true
-		        resp.Reason = fmt.Sprintf("%s", err)
-		        enc.Encode(resp) // write data 
-		        return
+			resp.Error = true
+			resp.Reason = fmt.Sprintf("%s", err)
+			enc.Encode(resp) // write data
+			return
 		}
 		v := cache.IsMember(k, req.Value) //true or false
 		resp.Value = v

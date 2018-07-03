@@ -12,11 +12,10 @@ type Response struct {
 }
 
 type HealthResponse struct {
-	Items    int `json:"items"`
+	Items    int   `json:"items"`
 	FileSize int64 `json:"size_kb"`
-	Max      int `json:"max"`
+	Max      int   `json:"max"`
 }
-
 
 /*
 type Conductor chan interface{}

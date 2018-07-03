@@ -5,8 +5,8 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 //type IpAddr string
@@ -58,29 +58,28 @@ func ParseConfig(filename string) *Config {
 	return &cfg
 }
 
-
 func parsePeriod(s string) int {
-	unit := string(s[len(s) - 1])
-	number, err := strconv.Atoi(s[:len(s) - 1])
+	unit := string(s[len(s)-1])
+	number, err := strconv.Atoi(s[:len(s)-1])
 	if err != nil {
 		panic(err)
 	}
 	var multiplier int
 	switch unit {
 	case "s":
-	    multiplier = 1
+		multiplier = 1
 	case "m":
-	    multiplier = 60
+		multiplier = 60
 	case "h":
-	    multiplier = 3600
+		multiplier = 3600
 	case "d":
-	    multiplier = 24 * 3600
+		multiplier = 24 * 3600
 	case "w":
-	    multiplier = 7 * 24 * 3600
+		multiplier = 7 * 24 * 3600
 	default:
-	    panic("Unknown type of time")
+		panic("Unknown type of time")
 	}
-        return multiplier * number
+	return multiplier * number
 }
 
 //func main() {
