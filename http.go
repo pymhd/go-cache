@@ -12,11 +12,8 @@ func runHTTPServer(host string, port int, ssl bool, crt, key string) {
 	rolton := mux.NewRouter()
 
 	rolton.HandleFunc("/map/{key}", MwManager(DictOpHandler, CheckAccess(config.HTTP.AllowNets))).Methods("GET", "DELETE", "POST")
-	rolton.HandleFunc("/list/{key}", ListOpHandler).Methods("PUT", "DELETE", "GET")
-	rolton.HandleFunc("/healthz", ShowStatsHandler).Methods("GET")
-
-	//rolton.HandleFunc("/", MwManager(novaHandler, Logging())).Methods("GET", "POST")
-	//rolton.HandleFunc("/nova", MwManager(novaHandler, Logging())).Methods("GET", "POST")
+	rolton.HandleFunc("/list/{key}", MwManager(ListOpHandler, CheckAccess(config.HTTP.AllowNets))).Methods("PUT", "DELETE", "GET")
+	rolton.HandleFunc("/healthz", MwManager(ShowStatsHandler, CheckAccess(config.HTTP.AllowNets))).Methods("GET")
 	if !ssl {
 		log.Fatal(http.ListenAndServe(host+":"+strconv.Itoa(port), rolton))
 	} else {
